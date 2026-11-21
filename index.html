@@ -478,10 +478,10 @@ function blowOut(){const c=$('candle');if(c.classList.contains('out'))return;c.c
   setTimeout(()=>{go('sx');morphOn=true;initQ();assign(sampleText(['I love you'],'"Great Vibes", cursive',Math.min(W()*.24,140)));},2600);
   setTimeout(()=>{scatterQ(14);setTimeout(()=>morphOn=false,2500);go('s5')},7600)}
 $('candle').onclick=blowOut;
-$('mic').onclick=async()=>{try{ac();const s=await navigator.mediaDevices.getUserMedia({audio:true});mic=s;const src=AC.createMediaStreamSource(s),an=AC.createAnalyser();an.fftSize=512;src.connect(an);
+$('mic').onclick=async()=>{try{ac();const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});mic=s;const src=AC.createMediaStreamSource(s),an=AC.createAnalyser();an.fftSize=1024;src.connect(an);await AC.resume();const z=AC.createGain();z.gain.value=0;an.connect(z);z.connect(AC.destination);let base=.02,tk=0;
   const d=new Uint8Array(an.fftSize);let over=0;$('meter').style.display='block';$('mic').textContent='now blow, gently...';
   (function f(){an.getByteTimeDomainData(d);let sum=0;for(const v of d){const x=(v-128)/128;sum+=x*x}const rms=Math.sqrt(sum/d.length);
-    $('lvl').style.width=Math.min(100,rms*400)+'%';over=rms>.17?over+1:Math.max(0,over-1);if(over>8){blowOut();return}raf2=requestAnimationFrame(f)})()}
+    $('lvl').style.width=Math.min(100,rms*400)+'%';tk++;if(tk<20)base=Math.min(.08,Math.max(base,rms));const th=Math.max(.06,base*2.5);over=rms>th?over+1:Math.max(0,over-.5);const fl=$('candle').querySelector('.flame');fl.style.opacity=Math.max(.35,1-over/10);if(over>=6){fl.style.opacity='';blowOut();return}raf2=requestAnimationFrame(f)})()}
   catch(e){$('mic').textContent='tap the candle instead'}};
 function stopMic(){cancelAnimationFrame(raf2);if(mic){mic.getTracks().forEach(t=>t.stop());mic=null}$('meter').style.display='none'}
 
