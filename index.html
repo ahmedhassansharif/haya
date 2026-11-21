@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06020a">
 <title>Haya ✦</title>
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Caveat:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Caveat:wght@400;500;600&family=Playfair+Display:ital,wght@1,700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#f0cf8e;--rose:#ff8fb1;--blush:#ffe1ea}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -338,34 +338,35 @@ function drawSky(t){sx.clearRect(0,0,W(),H());
   sx.globalAlpha=1}
 
 /* ---------- particle morph engine ---------- */
-const N=Math.round(Math.min(1500,Math.max(800,W()*H()/260)));
+const N=Math.round(Math.min(2400,Math.max(1400,W()*H()/200)));
 let Q=[];let morphOn=false;
 const PC=['#fff4e6','#f3d2b4','#e9b0bd','#ffffff','#f6e0b5','#fbe3e8'];
-function initQ(){Q=[];for(let i=0;i<N;i++){const x=Math.random()*W(),y=Math.random()*H();Q.push({x,y,tx:x,ty:y,vx:0,vy:0,c:PC[i%PC.length],r:Math.random()*1.4+.7,d:Math.random()*.04+.035})}}
+function initQ(){Q=[];for(let i=0;i<N;i++){const x=Math.random()*W(),y=Math.random()*H();Q.push({x,y,tx:x,ty:y,vx:0,vy:0,c:PC[i%PC.length],r:Math.random()*.8+.6,d:Math.random()*.04+.04})}}
 function sampleText(lines,font,sizePx,lineGap=1.05){const c=document.createElement('canvas'),w=Math.floor(W()),h=Math.floor(H());c.width=w;c.height=h;
   const g=c.getContext('2d');g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';
-  let fs=sizePx;g.font=`${fs}px ${font}`;const maxW=w*.9;for(const l of lines){while(g.measureText(l).width>maxW&&fs>10){fs-=2;g.font=`${fs}px ${font}`}}
+  let fs=sizePx;g.font=`italic 700 ${fs}px "Playfair Display",Georgia,serif`;const maxW=w*.88;for(const l of lines){while(g.measureText(l).width>maxW&&fs>10){fs-=2;g.font=`italic 700 ${fs}px "Playfair Display",Georgia,serif`}}
   const total=lines.length*fs*lineGap,y0=h*.42-total/2+fs*lineGap/2;lines.forEach((l,i)=>g.fillText(l,w/2,y0+i*fs*lineGap));
-  const data=g.getImageData(0,0,w,h).data,pts=[],step=Math.max(2,Math.round(Math.sqrt(w*h/ (N*9))));
+  const data=g.getImageData(0,0,w,h).data,pts=[],step=2;
   for(let y=0;y<h;y+=step)for(let x=0;x<w;x+=step)if(data[(y*w+x)*4+3]>128)pts.push([x,y]);return pts}
 function heartPts(){const pts=[],s=Math.min(W(),H())/38,cx0=W()/2,cy0=H()*.42;
   for(let i=0;i<N;i++){const t=Math.random()*Math.PI*2,k=Math.random()<.65?1:Math.sqrt(Math.random());
     pts.push([cx0+16*Math.pow(Math.sin(t),3)*s*k,cy0-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*s*k])}return pts}
-function assign(pts){for(let i=0;i<Q.length;i++){const p=pts[Math.floor(Math.random()*pts.length)]||[W()/2,H()/2];Q[i].tx=p[0]+(Math.random()-.5)*1.5;Q[i].ty=p[1]+(Math.random()-.5)*1.5}}
-function scatterQ(force=14){for(const q of Q){const a=Math.random()*Math.PI*2,v=Math.random()*force;q.vx+=Math.cos(a)*v;q.vy+=Math.sin(a)*v;
+let textUp=false;function assign(pts,isText=true){textUp=isText;for(let i=Q.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[Q[i],Q[j]]=[Q[j],Q[i]]}
+  for(let i=0;i<Q.length;i++){const p=pts[Math.floor((i+Math.random())*pts.length/Q.length)]||[W()/2,H()/2];Q[i].tx=p[0]+(Math.random()-.5)*1.5;Q[i].ty=p[1]+(Math.random()-.5)*1.5}}
+function scatterQ(force=14){textUp=false;for(const q of Q){const a=Math.random()*Math.PI*2,v=Math.random()*force;q.vx+=Math.cos(a)*v;q.vy+=Math.sin(a)*v;
   q.tx=Math.random()*W();q.ty=Math.random()*H()}}
 const SPR={};function sprite(c){if(SPR[c])return SPR[c];const s=document.createElement('canvas');s.width=s.height=32;const g=s.getContext('2d');
   const gr=g.createRadialGradient(16,16,0,16,16,16);gr.addColorStop(0,'#fff');gr.addColorStop(.18,c);gr.addColorStop(.45,c+'55');gr.addColorStop(1,c+'00');
   g.fillStyle=gr;g.fillRect(0,0,32,32);return SPR[c]=s}
-function drawQ(){if(!morphOn)return;cx.globalCompositeOperation='lighter';cx.globalAlpha=.9;
+function drawQ(){if(!morphOn)return;cx.globalCompositeOperation='lighter';cx.globalAlpha=1;
   for(const q of Q){q.vx=(q.vx+(q.tx-q.x)*q.d)*.86;q.vy=(q.vy+(q.ty-q.y)*q.d)*.86;q.x+=q.vx;q.y+=q.vy;
-    const s=q.r*5;cx.drawImage(sprite(q.c),q.x-s/2,q.y-s/2,s,s)}cx.globalCompositeOperation='source-over';cx.globalAlpha=1}
+    const s=q.r*5.2;cx.drawImage(sprite(q.c),q.x-s/2,q.y-s/2,s,s)}cx.globalCompositeOperation='source-over';cx.globalAlpha=1}
 
 /* ---------- fireworks / hearts / confetti ---------- */
 let P=[],R=[],fl=0,flc='#fff';
 const FC=[['#ffd9a8','#fff4e0'],['#f2a1b4','#ffe1e8'],['#ffffff','#fff2e6'],['#e8b86d','#fff0cf'],['#d98aa0','#f7d4dd']];
 function rocket(x,type){const c=FC[Math.floor(Math.random()*FC.length)];
-  R.push({x:x??W()*(.1+Math.random()*.8),y:H()+10,vx:Math.random()*1.6-.8,vy:-(H()*.017+Math.random()*H()*.006),ty:H()*(.1+Math.random()*.3),c,
+  const hi=textUp&&morphOn;R.push({x:x??(hi?(Math.random()<.5?W()*(.05+Math.random()*.25):W()*(.7+Math.random()*.25)):W()*(.1+Math.random()*.8)),y:H()+10,vx:Math.random()*1.6-.8,vy:-(H()*.017+Math.random()*H()*.006),ty:hi?H()*(.05+Math.random()*.08):H()*(.1+Math.random()*.3),c,
     type:type||['burst','burst','ring','heart','willow','burst'][Math.floor(Math.random()*6)]});whoosh()}
 function explode(x,y,c,type){pop();fl=.06;flc=c[0];const n=type==='heart'?90:type==='ring'?70:110;
   for(let i=0;i<n;i++){let vx,vy;
@@ -422,13 +423,13 @@ async function openGift(){opened=true;startMusic();boom();buzz(40);wake();
   const r=hold.getBoundingClientRect();hearts(r.left+75,r.top+75,60);fl=.22;flc='#f6e9dc';
   go('s1');initQ();for(const q of Q){q.x=r.left+75;q.y=r.top+75;const a=Math.random()*Math.PI*2,v=Math.random()*22;q.vx=Math.cos(a)*v;q.vy=Math.sin(a)*v}
   morphOn=true;scatterQ(0);
-  try{await Promise.race([document.fonts.load('120px "Great Vibes"'),new Promise(r=>setTimeout(r,1500))])}catch(e){}
+  try{await Promise.race([document.fonts.load('italic 700 120px "Playfair Display"'),new Promise(r=>setTimeout(r,2500))])}catch(e){}
   const seq=[
-    [1400,()=>{assign(sampleText([NAME],'"Great Vibes", cursive',Math.min(W()*.42,240)));chime(0)}],
+    [1400,()=>{assign(sampleText([NAME],'',Math.min(W()*.34,230)));chime(0)}],
     [3600,()=>{scatterQ(10);for(let i=0;i<5;i++)setTimeout(()=>rocket(W()*(.1+i*.2),i%2?'heart':'burst'),i*120);confetti(140)}],
-    [4300,()=>{assign(heartPts());chime(2)}],
+    [4300,()=>{assign(heartPts(),true);chime(2)}],
     [6500,()=>{scatterQ(8);show(3,420)}],
-    [7200,()=>{assign(sampleText(['Happy','Birthday'],'"Great Vibes", cursive',Math.min(W()*.3,170),1.0));chime(4)}],
+    [7200,()=>{assign(sampleText(['Happy','Birthday'],'',Math.min(W()*.19,150),1.08));chime(4)}],
     [8600,()=>{$('s1q').style.opacity=1;show(10,900)}],
     [10200,()=>{const b=$('s1b');b.style.opacity=1;b.style.pointerEvents='auto'}]];
   seq.forEach(([t,f])=>setTimeout(f,t))}
@@ -475,14 +476,32 @@ function tapStar(i,el){if(i!==lit)return;el.classList.remove('next');el.classLis
 let mic=null,raf2;
 function blowOut(){const c=$('candle');if(c.classList.contains('out'))return;c.classList.add('out');stopMic();chime(6);
   setTimeout(()=>{boom();show(10,170);for(let i=0;i<4;i++)setTimeout(()=>rocket(W()*(.2+i*.2),'heart'),i*350);confetti(200)},500);
-  setTimeout(()=>{go('sx');morphOn=true;initQ();assign(sampleText(['I love you'],'"Great Vibes", cursive',Math.min(W()*.24,140)));},2600);
+  setTimeout(()=>{go('sx');morphOn=true;initQ();assign(sampleText(['I love','you'],'',Math.min(W()*.2,140),1.08));},2600);
   setTimeout(()=>{scatterQ(14);setTimeout(()=>morphOn=false,2500);go('s5')},7600)}
 $('candle').onclick=blowOut;
-$('mic').onclick=async()=>{try{ac();const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});mic=s;const src=AC.createMediaStreamSource(s),an=AC.createAnalyser();an.fftSize=1024;src.connect(an);await AC.resume();const z=AC.createGain();z.gain.value=0;an.connect(z);z.connect(AC.destination);let base=.02,tk=0;
-  const d=new Uint8Array(an.fftSize);let over=0;$('meter').style.display='block';$('mic').textContent='now blow, gently...';
-  (function f(){an.getByteTimeDomainData(d);let sum=0;for(const v of d){const x=(v-128)/128;sum+=x*x}const rms=Math.sqrt(sum/d.length);
-    $('lvl').style.width=Math.min(100,rms*400)+'%';tk++;if(tk<20)base=Math.min(.08,Math.max(base,rms));const th=Math.max(.06,base*2.5);over=rms>th?over+1:Math.max(0,over-.5);const fl=$('candle').querySelector('.flame');fl.style.opacity=Math.max(.35,1-over/10);if(over>=6){fl.style.opacity='';blowOut();return}raf2=requestAnimationFrame(f)})()}
-  catch(e){$('mic').textContent='tap the candle instead'}};
+$('mic').onclick=async()=>{if(mic)return;
+  try{ac();AC.resume()}catch(e){}            // resume inside the tap (needed on iPhone)
+  $('mic').textContent='allow the microphone...';
+  try{const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});mic=s;
+    try{await AC.resume()}catch(e){}
+    const src=AC.createMediaStreamSource(s),hp=AC.createBiquadFilter(),an=AC.createAnalyser();hp.type='lowpass';hp.frequency.value=1500;
+    an.fftSize=1024;an.smoothingTimeConstant=.2;src.connect(hp);hp.connect(an);const z=AC.createGain();z.gain.value=0;an.connect(z);z.connect(AC.destination);
+    const d=new Float32Array(an.fftSize),fq=new Float32Array(an.frequencyBinCount),b0=Math.round(80/(AC.sampleRate/an.fftSize)),b1=Math.round(1400/(AC.sampleRate/an.fftSize));let base=0,n=0,lvl=0,over=0,t0=performance.now(),hinted=false;
+    $('meter').style.display='block';$('mic').textContent='now blow on the candle...';
+    const fl=$('candle').querySelector('.flame');
+    (function f(){an.getFloatTimeDomainData(d);let sum=0,pk=0;for(const v of d){sum+=v*v;const a=Math.abs(v);if(a>pk)pk=a}
+      const rms=Math.sqrt(sum/d.length);
+      an.getFloatFrequencyData(fq);let lg=0,ar=0,cnt=0;for(let i=b0;i<=b1;i++){const p=Math.pow(10,fq[i]/10)+1e-12;lg+=Math.log(p);ar+=p;cnt++}
+      const flat=Math.exp(lg/cnt)/(ar/cnt);  // ~1 for noise (blowing), low for a voice
+      if(n<30){base=(base*n+rms)/(n+1);n++}                      // first ~half second: learn the room
+      const th=Math.max(.02,base*3.2);lvl=lvl*.7+Math.min(1,rms/(th*2.2))*.3;
+      $('lvl').style.width=Math.round(lvl*100)+'%';
+      if(n>=30&&((rms>th&&flat>.3)||pk>.85))over=Math.min(14,over+1);else over=Math.max(0,over-.6);
+      fl.style.opacity=Math.max(.25,1-over/12);fl.style.filter=over>0?`blur(${over/6}px)`:'';
+      if(over>=10){fl.style.opacity='';fl.style.filter='';blowOut();return}
+      if(!hinted&&performance.now()-t0>8000){hinted=true;$('mic').textContent="can't hear you? blow closer, or tap the candle"}
+      raf2=requestAnimationFrame(f)})()}
+  catch(e){mic=null;$('mic').textContent='tap the candle instead'}};
 function stopMic(){cancelAnimationFrame(raf2);if(mic){mic.getTracks().forEach(t=>t.stop());mic=null}$('meter').style.display='none'}
 
 /* letter */
